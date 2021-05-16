@@ -28,7 +28,8 @@ namespace HTTP_WEB_ADONET_Core_Demo
             var document = parser.ParseDocument(resp.GetResponseStream());
             //Console.WriteLine(document.DocumentElement.OuterHtml);
             IElement tableElement =
-                document.QuerySelector("h3:has(> span#Распространение_по_странам_и_территориям) + table > tbody");
+                // document.QuerySelector("h3:has(> span#Распространение_по_странам_и_территориям) + table > tbody");
+                document.QuerySelector("#covid19-container > table > tbody");
             //Console.WriteLine(tableElement.QuerySelector("tbody").InnerHtml);
             int count = 0;
             int totalInfected = 0;
@@ -44,16 +45,16 @@ namespace HTTP_WEB_ADONET_Core_Demo
                         if (!item.Children[0].InnerHtml.Contains("Макао"))
                         {
                             totalInfected +=
-                            (item.Children[1].InnerHtml != "") ? Int32.Parse(item.Children[1].InnerHtml) : 0;
+                            (item.Children[2].FirstChild.TextContent != "") ? Int32.Parse(item.Children[2].FirstChild.TextContent) : 0;
                             totalDead +=
-                                (item.Children[3].InnerHtml != "") ? Int32.Parse(item.Children[3].InnerHtml) : 0;
+                                (item.Children[4].FirstChild.TextContent != "") ? Int32.Parse(item.Children[4].FirstChild.TextContent) : 0;
                             totalRecovered +=
-                                (item.Children[4].InnerHtml != "") ? Int32.Parse(item.Children[4].InnerHtml) : 0;
+                                (item.Children[3].FirstChild.TextContent != "") ? Int32.Parse(item.Children[3].FirstChild.TextContent) : 0;
                         }
                     }
-                    catch (Exception)
+                    catch (Exception ex)
                     {
-
+                        Console.WriteLine(ex.Message);
                         // throw;
                     }
                     // Console.WriteLine(item.Children[1].InnerHtml);
@@ -62,14 +63,14 @@ namespace HTTP_WEB_ADONET_Core_Demo
                 
                 count++;
             }
-            Console.WriteLine(totalInfected);
-            Console.WriteLine(totalDead);
-            Console.WriteLine(totalRecovered);
+            Console.WriteLine("totalInfected = " + totalInfected);
+            Console.WriteLine("totalDead = " + totalDead);
+            Console.WriteLine("totalRecovered = " + totalRecovered);
 
             var deadPt = ((double)totalDead / (double)totalInfected) * 100d;
             var recPt = ((double)totalRecovered / (double)totalInfected) * 100d;
-            Console.WriteLine(deadPt);
-            Console.WriteLine(recPt);
+            Console.WriteLine("deadPt: " + deadPt);
+            Console.WriteLine("recPt" + recPt);
 
             string connectionString =
               ConfigurationManager.ConnectionStrings["MyConnString"].ConnectionString;
@@ -77,15 +78,13 @@ namespace HTTP_WEB_ADONET_Core_Demo
                 new SqlConnection(connectionString))
             {
                 sqlConnection.Open();
-                /*SqlCommand insertCommand =
+                SqlCommand insertCommand =
                     sqlConnection.CreateCommand();
                 Console.WriteLine($"INSERT INTO [TotalStat] ([dead_percent], [recovered_percent]) VALUES ({String.Format("{0:0.##}", deadPt)}, {String.Format("{0:0.##}", recPt)})");
                 insertCommand.CommandText =
                     $"INSERT INTO [TotalStat] ([dead_percent], [recovered_percent]) VALUES ({deadPt.ToString().Replace(",", ".")}, {recPt.ToString().Replace(",", ".")})";
-
-
-                Console.WriteLine($"{insertCommand.ExecuteNonQuery()} rows were inserted");*/
                 
+                Console.WriteLine($"{insertCommand.ExecuteNonQuery()} rows were inserted");
                 
                 SqlCommand selectCommand =
                     sqlConnection.CreateCommand();
